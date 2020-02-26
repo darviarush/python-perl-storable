@@ -5,7 +5,7 @@ import re
 readme = open(join(dirname(__file__), 'README.md')).read()
 
 def get(r, name):
-    match = re.match(r, readme, re.S)
+    match = re.search(r, readme, re.S)
     if not match:
         raise Exception("В README.md не найден" + name)
     return match
@@ -13,7 +13,7 @@ def get(r, name):
 version = get(r'## VERSION\s*(\S+)', "а версия")
 author = get(r'# AUTHOR\s*([^<>]+)\s+<([^<>]+)>', " автор")
 description = get(r'# NAME\s*(.+)>', "о описание")
-requirements = get(r'# REQUIREMENTS\s*(.*?)\s+# >', "ы зависимости")
+requirements = get(r'# REQUIREMENTS\s+([^#]*)\s*#', "ы зависимости")
 
 requirements = requirements.group(1).split('\n* ')
 
