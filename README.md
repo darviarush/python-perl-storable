@@ -13,7 +13,16 @@ python_perl_storable - распаковывает структуру из фор
 ```
 from python_perl_storable import thaw
 
-thaw(data)
+class A:
+    def getX(self):
+        return self.x
+
+data = thaw(storable_binary_string, classes={'A::A': A}, iconv=lambda s: s.decode('windows-1251'))
+print(data) # -> {'x': <__main__.A instance at 0x7f7f532e1050>, 's': "Здравствуй, Мир!"}
+
+print(data['x'].getX()) # -> 6
+
+print(data['s'])        # -> Здравствуй, Мир!
 ```
 
 ## SYNOPSIS
@@ -22,15 +31,17 @@ thaw(data)
 
 Данный формат довольно популярен и запакованные в бинарную строку данные различных проектов на perl хранятся во внешних хранилищах: mysql, memcached, tarantool и т.д.
 
-Данный змеиный модуль предназначен для дешифровки данных, полученных из таких хранилищ в структуры python. 
+Данный змеиный модуль предназначен для распаковки данных, полученных из таких хранилищ, в структуры python. 
 
-## METHODS
+## FUNCTIONS
 
 ### thaw
 
 #### Arguments
 
-- events - события. Бинарная строка  
+- storable - бинарная строка
+- classes - словарь с классами. Необязательный параметр
+- iconv - функция для конвертации строк не в utf8. Необязательный параметр
 
 #### Returns
 
@@ -39,7 +50,7 @@ Any
 # INSTALL
 
 ```sh
-$ pip install 
+$ pip install python-perl-storable
 ```
 
 # REQUIREMENTS
