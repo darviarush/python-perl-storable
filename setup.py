@@ -10,17 +10,19 @@ def get(r, name):
         raise Exception("В README.md не найден" + name)
     return match
 
-version = get(r'## VERSION\s*(\S+)', "а версия")
+version = get(r'# VERSION\s*(\S+)', "а версия")
 author = get(r'# AUTHOR\s*([^<>]+)\s+<([^<>]+)>', " автор")
 description = get(r'# NAME\s*(.+)>', "о описание")
-requirements = get(r'# REQUIREMENTS\s+([^#]*)\s*#', "ы зависимости")
+requirements = get(r'# REQUIREMENTS\s+([^#]*?)\s*#', "ы зависимости")
 
-requirements = requirements.group(1).split('\n* ')
+requirements = requirements.group(1)
+requirements = [] if requirements == 'Нет' else requirements.split('\n* ')
 
 setup(
     name='python-perl-storable',
     version=version.group(1),
     long_description=readme,
+    long_description_content_type="text/markdown",
     description=description.group(1),
 
     scripts=[],
@@ -48,13 +50,13 @@ setup(
         'Topic :: Software Development :: Build Tools',
 
         # Pick your license as you wish (should match "license" above)
-        # 'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: MIT License',
+        
+        "Operating System :: OS Independent",
+        "Topic :: Text Processing",
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        # 'Programming Language :: Python :: 2',
-        # 'Programming Language :: Python :: 2.6',
-        # 'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
