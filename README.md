@@ -1,14 +1,14 @@
 # python_perl_storable
 
-## NAME
+# NAME
 
 python_perl_storable - распаковывает структуру из формата perl-storable
 
-## VERSION
+# VERSION
 
 0.0.1
 
-## DESCRIPTION
+# DESCRIPTION
 
 ```
 from python_perl_storable import thaw
@@ -25,7 +25,7 @@ print(data['x'].getX()) # -> 6
 print(data['s'])        # -> Здравствуй, Мир!
 ```
 
-## SYNOPSIS
+# SYNOPSIS
 
 В языке perl есть свой формат бинарных данных для упаковки любых структур: хешей, списков, объектов, регулярок, скаляров, файловых дескрипторов, ссылок, глобов и т.п. Он реализуется модулем https://metacpan.org/pod/Storable.
 
@@ -33,17 +33,17 @@ print(data['s'])        # -> Здравствуй, Мир!
 
 Данный змеиный модуль предназначен для распаковки данных, полученных из таких хранилищ, в структуры python. 
 
-## FUNCTIONS
+# FUNCTIONS
 
-### thaw
+## thaw
 
-#### Arguments
+### ARGUMENTS
 
 - storable - бинарная строка
 - classes - словарь с классами. Необязательный параметр
 - iconv - функция для конвертации строк не в utf8. Необязательный параметр
 
-#### Returns
+### RETURNS
 
 Any
 
@@ -55,6 +55,8 @@ $ pip install python-perl-storable
 
 # REQUIREMENTS
 
+Нет
+
 # LICENSE
 
 Copyright (C) Yaroslav O. Kosmina.
@@ -65,3 +67,9 @@ it under the same terms as Python itself.
 # AUTHOR
 
 Yaroslav O. Kosmina <darviarush@mail.ru>
+
+# LICENSE
+
+MIT License
+
+Copyright (c) 2020 Yaroslav O. Kosmina
