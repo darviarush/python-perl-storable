@@ -69,7 +69,7 @@ Yaroslav O. Kosmina <darviarush@mail.ru
 Home-page: https://github.com/darviarush/python-perl-storable
 Author: Yaroslav O. Kosmina
 Author-email: darviarush@mail.ru
-License: UNKNOWN
+License: MIT
 Description: # python_perl_storable
         
         # NAME
@@ -146,14 +146,19 @@ Description: # python_perl_storable
         
         Copyright (c) 2020 Yaroslav O. Kosmina
         
-Platform: UNKNOWN
+        
+Platform: any
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: CCXX Developers
 Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Text Processing
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.3
 Classifier: Programming Language :: Python :: 3.4
 Classifier: Programming Language :: Python :: 3.5
 Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: 3.7
-Provides-Extra: dev
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown

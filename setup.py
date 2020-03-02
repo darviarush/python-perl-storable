@@ -5,15 +5,15 @@ import re
 readme = open(join(dirname(__file__), 'README.md')).read()
 
 def get(r, name):
-    match = re.search(r, readme, re.S)
+    match = re.search(r, readme, re.S | re.M)
     if not match:
         raise Exception("В README.md не найден" + name)
     return match
 
-version = get(r'# VERSION\s*(\S+)', "а версия")
-author = get(r'# AUTHOR\s*([^<>]+)\s+<([^<>]+)>', " автор")
-description = get(r'# NAME\s*(.+)>', "о описание")
-requirements = get(r'# REQUIREMENTS\s+([^#]*?)\s*#', "ы зависимости")
+version = get(r'^# VERSION\s*(\S+)', "а версия")
+author = get(r'^# AUTHOR\s*([^<>#]+)\s+<([^<>]+)>', " автор")
+description = get(r'^# NAME\s*([^\n]+?)\s*$', "о описание")
+requirements = get(r'^# REQUIREMENTS\s+([^#]*?)\s*#', "ы зависимости")
 
 requirements = requirements.group(1)
 requirements = [] if requirements == 'Нет' else requirements.split('\n* ')
@@ -21,12 +21,13 @@ requirements = [] if requirements == 'Нет' else requirements.split('\n* ')
 setup(
     name='python-perl-storable',
     version=version.group(1),
+    description=description.group(1),
     long_description=readme,
     long_description_content_type="text/markdown",
-    description=description.group(1),
 
-    scripts=[],
-
+    #scripts=[],
+    platforms=['any'],
+    python_requires='>=3.6',
     # The project's main homepage.
     url='https://github.com/darviarush/python-perl-storable',
 
@@ -35,7 +36,7 @@ setup(
     author_email=author.group(2),
 
     # Choose your license
-    # license='MIT',
+    license='MIT',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -64,12 +65,13 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
+    
    # What does your project relate to?
     # keywords='sample setuptools development',
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    packages=find_packages(),
 
     # Alternatively, if you want to distribute just a my_module.py, uncomment
     # this:
@@ -81,14 +83,16 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=requirements,
 
+    # setup_requires=[]
+
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
     # $ pip install -e .[dev,test]
-    extras_require={
-        'dev': ['check-manifest'],
+    #extras_require={
+    #    'dev': ['check-manifest'],
         # 'test': ['coverage'],
-    },
+    #},
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
