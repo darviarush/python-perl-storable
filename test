@@ -1,5 +1,5 @@
 #!/bin/bash
 
 rm -fr htmlcov
-coverage run --source rabbitmq_python tests/hawking.test.py && coverage report -m && coverage html && \
+coverage run --source rabbitmq_python tests/thaw.py && coverage report -m && coverage html && \
     if [ "$1" == "open" ]; then xdg-open htmlcov/index.html; fi

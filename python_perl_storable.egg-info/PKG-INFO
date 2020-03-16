@@ -1,71 +1,7 @@
 Metadata-Version: 2.1
 Name: python-perl-storable
-Version: 0.0.1
+Version: 0.0.2
 Summary: python_perl_storable - распаковывает структуру из формата perl-storable
-
-# VERSION
-
-0.0.1
-
-# DESCRIPTION
-
-```
-from python_perl_storable import thaw
-
-class A:
-    def getX(self):
-        return self.x
-
-data = thaw(storable_binary_string, classes={'A::A': A}, iconv=lambda s: s.decode('windows-1251'))
-print(data) # -> {'x': <__main__.A instance at 0x7f7f532e1050>, 's': "Здравствуй, Мир!"}
-
-print(data['x'].getX()) # -> 6
-
-print(data['s'])        # -> Здравствуй, Мир!
-```
-
-# SYNOPSIS
-
-В языке perl есть свой формат бинарных данных для упаковки любых структур: хешей, списков, объектов, регулярок, скаляров, файловых дескрипторов, ссылок, глобов и т.п. Он реализуется модулем https://metacpan.org/pod/Storable.
-
-Данный формат довольно популярен и запакованные в бинарную строку данные различных проектов на perl хранятся во внешних хранилищах: mysql, memcached, tarantool и т.д.
-
-Данный змеиный модуль предназначен для распаковки данных, полученных из таких хранилищ, в структуры python. 
-
-# FUNCTIONS
-
-## thaw
-
-### ARGUMENTS
-
-- storable - бинарная строка
-- classes - словарь с классами. Необязательный параметр
-- iconv - функция для конвертации строк не в utf8. Необязательный параметр
-
-### RETURNS
-
-Any
-
-# INSTALL
-
-```sh
-$ pip install python-perl-storable
-```
-
-# REQUIREMENTS
-
-Нет
-
-# LICENSE
-
-Copyright (C) Yaroslav O. Kosmina.
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Python itself.
-
-# AUTHOR
-
-Yaroslav O. Kosmina <darviarush@mail.ru
 Home-page: https://github.com/darviarush/python-perl-storable
 Author: Yaroslav O. Kosmina
 Author-email: darviarush@mail.ru
@@ -78,7 +14,7 @@ Description: # python_perl_storable
         
         # VERSION
         
-        0.0.1
+        0.0.2
         
         # DESCRIPTION
         
@@ -149,11 +85,9 @@ Description: # python_perl_storable
         
 Platform: any
 Classifier: Development Status :: 4 - Beta
-Classifier: Intended Audience :: CCXX Developers
-Classifier: Topic :: Software Development :: Build Tools
+Classifier: Topic :: Text Processing
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
-Classifier: Topic :: Text Processing
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.3
 Classifier: Programming Language :: Python :: 3.4

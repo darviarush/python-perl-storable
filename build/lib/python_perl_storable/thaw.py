@@ -68,6 +68,7 @@ class StorableReader:
         self.aclass = []  # классы распознанные раньше
         self.bless = classes or {}  # классы для распознавания
         self.iconv = iconv  # конвертер строк
+        self.type = None
 
     def read_magic(self):
         """ Считывает магическое число """
@@ -108,16 +109,21 @@ class StorableReader:
     def retrieve(self):
         """ Считывает структуру рекурсивно """
         index = self.readUInt8()
-        return (RETRIVE_METHOD[index] or self.retrieve_other)(self)
+        fn = RETRIVE_METHOD[index]
+        if fn:
+            return fn(self)
+        self.type = index
+        self.retrieve_other()
+
 
     def retrieve_object(self):
         tag = self.readInt32BE()
-        if tag < 0 or tag >= len(self.aseen): raise PerlStorableException('Object #' + tag + ' out of range')
+        if tag < 0 or tag >= len(self.aseen):
+            raise PerlStorableException('Object #' + tag + ' out of range')
         return self.aseen[tag]
 
     def retrieve_other(self):
-        raise PerlStorableException(
-            'Структура Storable в бинарной строке: ' + repr(self.storable) + "\nСтруктура Storable повреждена.")
+        raise PerlStorableException("Структура Storable повреждена. Обработчик № " + str(self.type))
 
     def retrieve_byte(self):
         return self.seen(self.readUInt8() - 128)
@@ -199,25 +205,19 @@ class StorableReader:
 
         return hash
 
+    def retrieve_weakref(self):
+        return self.retrieve_ref()
+
     def retrieve_undef(self):
         return self.seen(None)
 
-    def retrieve_blessed(self):
-        length = self.readUInt8()
-
-        if length & 0x80:
-            length = self.readInt32LE()
-
-        classname = self.get_lstring(length)
-        self.aclass.append(classname)
-
-        sv = self.retrieve()
-
+    def make_obj(self, sv, classname):
         classname_python = classname.replace('::', '__')
 
         # делаем класс F одинаковым с классом self.bless[classname]
         # объекты класса F будут "instanceof A"
-        a_class = self.bless[classname] if classname in self.bless else type(classname_python, ((list if isinstance(sv, list) else object),), {})
+        a_class = self.bless[classname] if classname in self.bless else type(classname_python, (
+        (list if isinstance(sv, list) else object),), {})
 
         obj = a_class.__new__(a_class)
 
@@ -228,8 +228,31 @@ class StorableReader:
         else:
             for key, val in sv.items():
                 setattr(obj, key, val)
-
         return obj
+
+    def retrieve_blessed(self):
+        length = self.readUInt8()
+
+        if length & 0x80:
+            length = self.readInt32LE()
+
+        classname = self.get_lstring(length)
+        self.aclass.append(classname)
+        sv = self.retrieve()
+        return self.make_obj(sv, classname)
+
+    def retrieve_idx_blessed(self):
+        idx = self.readUInt8()
+        if idx & 0x80:
+            idx = this.readInt32LE()
+        if idx<0 or idx>=len(self.aclass):
+            raise PerlStorableException("Повреждена структура Storable: битый индекс в aseen: " + idx)
+        classname = this.aclass[idx]
+        sv = self.retrieve()
+        return self.make_obj(sv, classname)
+
+    def retrieve_overloaded(self):
+       return self.retrieve_ref()
 
     def readUInt8(self):
         self.pos += 1

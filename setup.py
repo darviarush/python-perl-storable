@@ -47,14 +47,12 @@ setup(
         'Development Status :: 4 - Beta',
 
         # Indicate who your project is intended for
-        'Intended Audience :: CCXX Developers',
-        'Topic :: Software Development :: Build Tools',
+        "Topic :: Text Processing",
 
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: MIT License',
         
         "Operating System :: OS Independent",
-        "Topic :: Text Processing",
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
