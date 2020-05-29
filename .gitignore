@@ -7,4 +7,4 @@
 /build/
 /python_perl_storable.egg-info/
 /dist/
-
+/Storable-3.15/
