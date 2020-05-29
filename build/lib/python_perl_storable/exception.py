@@ -1,2 +1,0 @@
-class PerlStorableException(Exception):
-    pass
