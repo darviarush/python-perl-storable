@@ -9,3 +9,5 @@
 /dist/
 /Storable-3.15/
 /perl-5.30.3/
+*.sublime-project
+*.sublime-workspace
