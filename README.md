@@ -6,18 +6,25 @@ python_perl_storable - распаковывает структуру из фор
 
 # VERSION
 
-0.0.3
+0.0.4
 
 # DESCRIPTION
 
 ```
-from python_perl_storable import thaw
+from python_perl_storable import freeze, thaw
 
 class A:
     def getX(self):
         return self.x
 
-data = thaw(storable_binary_string, classes={'A::A': A}, iconv=lambda s: s.decode('windows-1251'))
+storable_binary_string = freeze({'x': A(x=6), 's': "Здравствуй, Мир!"})
+
+data = thaw(
+	storable_binary_string, 
+	classes={'A::A': A}, 
+	iconv=lambda s: s.decode('windows-1251')
+)
+
 print(data) # -> {'x': <__main__.A instance at 0x7f7f532e1050>, 's': "Здравствуй, Мир!"}
 
 print(data['x'].getX()) # -> 6

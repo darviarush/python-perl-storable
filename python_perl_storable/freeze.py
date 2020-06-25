@@ -2,52 +2,49 @@ import struct
 from python_perl_storable.exception import PerlStorableException
 from python_perl_storable.constants import *
 
-from data_printer import p, np 
-
 def is_ref(obj):
     return isinstance(obj, (dict, list, tuple)) \
         or isinstance(obj, object) and hasattr(obj, '__dict__')
 
-
-def debug(s, number, int8=False):
-    const = SX[number] if int8 and number in SX else ""
-    print("%s -> \\x%02x (%d) %s" % (s, int(number), number, const))
+# from data_printer import p, np 
+# def debug(s, number, int8=False):
+#     const = SX[number] if int8 and number in SX else ""
+#     print("%s -> \\x%02x (%d) %s" % (s, int(number), number, const))
 
 class StorableWriter:
-    def __init__(self, iconv=None):
+    def __init__(self):
         self.hseen = {}
         self.tagnum = 0
         self.hclass = {}
         self.classnum = 0
         self.storable = [] # выходной буфер
-        self.iconv = iconv # конвертер строк
     
     def writeUInt8(self, number):
-        debug("writeUInt8", number, 1)
+        # debug("writeUInt8", number, 1)
         self.storable.append( struct.pack("B", number) )
     
     def writeInt32LE(self, number):
-        debug("writeInt32", number)
+        # debug("writeInt32", number)
         self.storable.append( struct.pack("<i", number) )
     
     def writeInt32BE(self, number):
-        debug("writeInt32", number)
+        # debug("writeInt32", number)
         self.storable.append( struct.pack(">i", number) )
     
     def writeInt8(self, number):
-        debug("writeInt8", number)
+        # debug("writeInt8", number)
         self.storable.append( struct.pack("b", number) )
     
     def writeInt64LE(self, number):
-        debug("writeInt64", number)
+        # debug("writeInt64", number)
         self.storable.append( struct.pack("<q", number) )
     
     def writeDouble64LE(self, number):
-        debug("writeDouble", number)
+        # debug("writeDouble", number)
         self.storable.append( struct.pack("<d", number) )
 
     def write(self, string):
-        print("write %s" % string)
+        # print("write %s" % string)
         self.storable.append(string)
 
     def magic_write(self):
@@ -72,8 +69,8 @@ class StorableWriter:
 
     def store(self, sv, from_ref=False):
 
-        print("store id=%s from_ref=%s" % (self.hseen[id(sv)] if id(sv) in self.hseen else 'no', from_ref) )
-        p(sv)
+        # print("store id=%s from_ref=%s" % (self.hseen[id(sv)] if id(sv) in self.hseen else 'no', from_ref) )
+        # p(sv)
 
         if sv is None:
             self.writeUInt8(SX_UNDEF)
@@ -167,7 +164,7 @@ class StorableWriter:
         self.magic_write()
         self.store(sv, from_ref=True)
 
-def freeze(sv, iconv=None):
-    w = StorableWriter(iconv=iconv)
+def freeze(sv):
+    w = StorableWriter()
     w.ref_store(sv)
     return b''.join(w.storable)

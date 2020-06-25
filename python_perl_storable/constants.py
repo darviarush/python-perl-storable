@@ -10,7 +10,7 @@ SIZE_OF_NV = 8
 LG_BLESS = 127	# Large classname bless limit
 
 #define svis_REF		0
-svis_SCALAR	= 1
+# svis_SCALAR	= 1
 #define svis_ARRAY		2
 #define svis_HASH		3
 #define svis_TIED		4
