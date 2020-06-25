@@ -2,62 +2,11 @@
  * Парсит данные в формате perl Storable и возвращает примитивы и объекты Python
 """
 
-# SX_OBJECT = 0 # Already stored object
-# SX_LSCALAR = 1 # Scalar (large binary) follows (length, data)
-# SX_ARRAY = 2 # Array forthcoming (size, item list)
-# SX_HASH = 3 # Hash forthcoming (size, key/value pair list)
-# SX_REF = 4 # Reference to object forthcoming
-# SX_UNDEF = 5 # Undefined scalar
-# SX_INTEGER = 6 # Integer forthcoming
-# SX_DOUBLE = 7 # Double forthcoming
-# SX_BYTE = 8 # (signed) byte forthcoming
-# SX_NETINT = 9 # Integer in network order forthcoming
-# SX_SCALAR = 10 # Scalar (binary, small) follows (length, data)
-# SX_TIED_ARRAY = 11 # Tied array forthcoming
-# SX_TIED_HASH = 12 # Tied hash forthcoming
-# SX_TIED_SCALAR = 13 # Tied scalar forthcoming
-# SX_SV_UNDEF = 14 # Perl's immortal PL_sv_undef
-# SX_SV_YES = 15 # Perl's immortal PL_sv_yes
-# SX_SV_NO = 16 # Perl's immortal PL_sv_no
-# SX_BLESS = 17 # Object is blessed
-# SX_IX_BLESS = 18 # Object is blessed, classname given by index
-# SX_HOOK = 19 # Stored via hook, user-defined
-# SX_OVERLOAD = 20 # Overloaded reference
-# SX_TIED_KEY = 21 # Tied magic key forthcoming
-# SX_TIED_IDX = 22 # Tied magic index forthcoming
-# SX_UTF8STR = 23 # UTF-8 string forthcoming (small)
-# SX_LUTF8STR = 24 # UTF-8 string forthcoming (large)
-# SX_FLAG_HASH = 25 # Hash with flags forthcoming (size, flags, key/flags/value triplist)
-# SX_CODE = 26 # Code references as perl source code
-# SX_WEAKREF = 27 # Weak reference to object forthcoming
-# SX_WEAKOVERLOAD = 28 # Overloaded weak reference
-# SX_VSTRING = 29 # vstring forthcoming (small)
-# SX_LVSTRING = 30 # vstring forthcoming (large)
-# SX_SVUNDEF_ELEM = 31 # array element set to &PL_sv_undef
-# SX_REGEXP = 32 # Regexp
-# SX_LOBJECT = 33 # Large object: string, array or hash (size >2G)
-SX_LAST = 34  # invalid. marker only
-
 RETRIVE_METHOD = []
-
-STORABLE_BIN_MAJOR = 2  # Binary major "version"
-STORABLE_BIN_MINOR = 11  # Binary minor "version"
-BYTEORDERSTR = b'12345678'
-
-SIZE_OF_INT = 4
-SIZE_OF_LONG = 8
-SIZE_OF_CHAR_PTR = 8
-SIZE_OF_NV = 8
-
-SHV_RESTRICTED = 0x01
-SHV_K_UTF8 = 0x01
-SHV_K_WASUTF8 = 0x02
-SHV_K_LOCKED = 0x04
-SHV_K_ISSV = 0x08
-# SHV_K_PLACEHOLDER = 0x10
 
 import struct
 from python_perl_storable.exception import PerlStorableException
+from python_perl_storable.constants import *
 
 
 class StorableReader:
@@ -76,7 +25,8 @@ class StorableReader:
         version_major = use_network_order >> 1
         version_minor = self.readUInt8() if version_major > 1 else 0
 
-        if version_major > STORABLE_BIN_MAJOR or version_major == STORABLE_BIN_MAJOR and version_minor > STORABLE_BIN_MINOR:
+        if version_major > STORABLE_BIN_MAJOR or \
+            version_major == STORABLE_BIN_MAJOR and version_minor > STORABLE_BIN_MINOR:
             raise PerlStorableException(
                 'Версия Storable не совпадает: требуется v%i.%i, а данные имеют версию v%i.%i' % (
                     STORABLE_BIN_MAJOR, STORABLE_BIN_MINOR, version_major, version_minor))
@@ -88,8 +38,9 @@ class StorableReader:
         use_NV_size = 1 if version_major >= 2 or version_minor >= 2 else 0
         buf = self.read(length_magic)
 
-        if buf != BYTEORDERSTR:
-            raise PerlStorableException('Магическое число не совпадает')
+        if buf != BYTEORDER_BYTES:
+            raise PerlStorableException('Magic number is not compatible: %s <> %s' 
+                % (buf, BYTEORDER_BYTES))
 
         if self.readInt8() != SIZE_OF_INT:
             raise PerlStorableException('Integer size is not compatible')
@@ -148,6 +99,10 @@ class StorableReader:
         size = self.readUInt8()
         return self.seen(self.read(size).decode('utf8'))
 
+    def retrieve_lutf8str(self):
+        size = self.readInt32LE()
+        return self.seen(self.read(size).decode('utf8'))
+
     def retrieve_array(self):
         size = self.readInt32LE()
         array = self.seen([])
@@ -157,7 +112,7 @@ class StorableReader:
         return array
 
     def retrieve_ref(self):
-        """ Аналога ссылки perl-а в Python нет, в Js всё ссылки, поэтому возвращаем значение так """
+        """ Аналога ссылки perl-а в Python нет, в Python всё ссылки, поэтому возвращаем значение так """
         return self.seen(self.retrieve())
 
     def retrieve_hash(self):
@@ -211,6 +166,9 @@ class StorableReader:
     def retrieve_undef(self):
         return self.seen(None)
 
+    def retrieve_sv_undef(self):
+        return self.seen(None)
+
     def make_obj(self, sv, classname):
         classname_python = classname.replace('::', '__')
 
@@ -246,7 +204,7 @@ class StorableReader:
         if idx & 0x80:
             idx = this.readInt32LE()
         if idx<0 or idx>=len(self.aclass):
-            raise PerlStorableException("Повреждена структура Storable: битый индекс в aseen: " + idx)
+            raise PerlStorableException("Повреждена структура Storable: битый индекс в aclass: " + idx)
         classname = this.aclass[idx]
         sv = self.retrieve()
         return self.make_obj(sv, classname)
@@ -274,12 +232,6 @@ class StorableReader:
         self.pos += length
         return self.storable[self.pos - length: self.pos]
 
-    def is_ascii(self, buffer):
-        for c in buffer:
-            if c > 127:
-                return False
-        return True
-
     def get_lstring(self, length, in_utf8=False):
         if length == 0:
             return ''
@@ -287,7 +239,7 @@ class StorableReader:
 
         if in_utf8:
             return s.decode('utf8')
-        if self.is_ascii(s):
+        if is_ascii(s):
             return s.decode('ascii')
         if self.iconv:
             return self.iconv(s)

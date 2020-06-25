@@ -6,7 +6,7 @@ python_perl_storable - распаковывает структуру из фор
 
 # VERSION
 
-0.0.2
+0.0.3
 
 # DESCRIPTION
 
@@ -43,6 +43,14 @@ print(data['s'])        # -> Здравствуй, Мир!
 - classes - словарь с классами. Необязательный параметр
 - iconv - функция для конвертации строк не в utf8. Необязательный параметр
 
+## freeze
+
+### ARGUMENTS
+
+- data - структура python
+- classes - словарь с классами. Необязательный параметр
+- iconv - функция для конвертации строк не в utf8. Необязательный параметр
+
 ### RETURNS
 
 Any
@@ -55,7 +63,7 @@ $ pip install python-perl-storable
 
 # REQUIREMENTS
 
-Нет
+* data-printer
 
 # LICENSE
 

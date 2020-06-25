@@ -1,3 +1,0 @@
-from python_perl_storable.thaw import thaw
-from python_perl_storable.freeze import freeze
-from python_perl_storable.exception import PerlStorableException

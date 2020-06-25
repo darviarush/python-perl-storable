@@ -4,11 +4,10 @@ use warnings;
 use utf8;
 use open qw/:std :utf8/;
 
-use Storable qw/freeze thaw/;
 require './script/gentest-util.pl';
 
-open my $f, ">", "tests/test_thaw.py" or die $!;
 
+open my $f, ">", "tests/test_freeze.py" or die $!;
 
 
 my $x;
@@ -16,18 +15,19 @@ my $i=0;
 my $its = join "\n\n", map {
     my $name = $_->[0];
     my $data = $_->[1];
-    my $freeze = freeze ref $data? $data: \$data;
-    my $array = ascii($freeze);
-    my $expect = $_->[3] // "self.assertEqual(thaw(data), ".($_->[2] // to_json($data)).", '$name')";
+    my $expect = $_->[3] // "self.assertEqual(thaw(data), value, '$name')";
+    my $freeze = $_->[2] // do { use DDP {colored=>1}; 
+    	my $x=to_json($data); p($name); $x };
 
     $i++;
 
     #print "$name\t$freeze\n\n";
 
 << "END_IT"
-    def test_throw_$i(self):
+    def test_freeze_$i(self):
         """ $name """
-        data = b'$array';
+        value = $freeze
+        data = freeze(value)
         $expect
 END_IT
 }
@@ -44,33 +44,40 @@ END_IT
     ["Строка", "123"],
     ["Пустая строка", ""],
     ["Длинная строка", "1" x 1000, "'1' * 1000"],
-    ["Строка no utf8", do { $x="Привет!"; utf8::encode($x); $x}, "b'".ascii($x)."'"],
+    ["Строка no utf8", do { $x="Привет!"; utf8::encode($x); $x}, 
+    	"b'".ascii($x)."'"],
     ["Строка в utf8", "Привет!"],
     ["Скаляр", $x = do { my $x = -1.23; my $y=int $x; "$x" }],
     ["Массив", [123, -1.23, "123", "Привет!"]],
-    ["Хеш", {1 => 23, -1.56e10 => -1.23, u => "123",  "Привет!" => [1, 2, 3], tip => {x => undef} }],
+    ["Хеш", {1 => 23, -1.56e10 => -1.23, u => "123",  "Привет!" => 
+    	[1, 2, 3], tip => {x => undef} }],
     ["Неопределённое значение", undef],
     ["Вложенный Массив", [123, -1.23, "123", [1, 2, 3], "Привет!"]],
-    ["Рекурсивный Массив", do {
-        my $x = [123, -1.23, undef, "123", "1" x 1000, [5], {x=>6}, "Привет!"];
-        push @$x, $x;
-        $x
-    }, undef, "
+    ["Рекурсивный Массив", undef, '
+        x = [123, -1.23, None, "123", "1" * 1000, [5], {"x":6}, 
+        	"Привет!"];
+        x.append(x)
+        x
+    ', undef, "
         a = thaw(data)
         self.assertEqual(len(a), len(RECURSION_ARRAY))
         self.assertTrue(a[-1] == a)
     "],
-    ["Объект", bless({x=>6}, "A::A"), undef, "
-        class A__A:
-            def getX(self):
-                return self.x
+    ["Объект", undef, 'class A__A:
+		def __init__(self, x):
+			self.x = x
+        def getX(self):
+            return self.x
+        A__A(x=6)', "
+        
         a = thaw(data, classes={'A::A': A__A})
         self.assertEqual(a.getX(), 6)
         self.assertIsInstance(a, A__A)
     "],
-    ["Объект-массив", bless([5, "abc"], "A"), undef, "
-        class A(list):
-            pass
+    ["Объект-массив", undef, 'class A(list):
+        pass
+    	A([5, "abc"])', "
+        
         a = thaw(data, classes={'A': A})
         self.assertEqual(len(a), 2)
         self.assertIsInstance(a, A)
@@ -91,12 +98,13 @@ import unittest
 sys.path.append(".")
 
 from python_perl_storable.thaw import thaw
+from python_perl_storable.freeze import freeze
 
 x=[123, -1.23, None, '123', '1' * 1000, [5], {'x': 6}, 'Привет!']
 x.append(x)
 RECURSION_ARRAY = x
 
-class ThawTestCase(unittest.TestCase):
+class FreezeTestCase(unittest.TestCase):
 
 $its
 
