@@ -9,7 +9,7 @@ import unittest
 
 sys.path.append(".")
 
-from python_perl_storable.thaw import thaw
+from python_perl_storable import thaw, freeze
 
 x=[123, -1.23, None, '123', '1' * 1000, [5], {'x': 6}, 'Привет!']
 x.append(x)

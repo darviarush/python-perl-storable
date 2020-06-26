@@ -6,7 +6,7 @@ python_perl_storable - распаковывает структуру из фор
 
 # VERSION
 
-0.0.5
+0.0.6
 
 # DESCRIPTION
 

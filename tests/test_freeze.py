@@ -4,8 +4,7 @@ from data_printer import np, p
 
 sys.path.append(".")
 
-from python_perl_storable.thaw import thaw
-from python_perl_storable.freeze import freeze
+from python_perl_storable import thaw, freeze
 import subprocess
 
 def freeze_perl(value, init=''):
