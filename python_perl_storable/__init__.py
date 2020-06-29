@@ -1,2 +1,2 @@
-from python_perl_storable.thaw import thaw
-from python_perl_storable.freeze import freeze
+from .thaw import thaw
+from .freeze import freeze

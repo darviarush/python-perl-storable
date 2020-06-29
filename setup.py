@@ -25,7 +25,7 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
 
-    #scripts=[],
+    scripts=['script/pypls'],
     platforms=['any'],
     python_requires='>=3.6',
     # The project's main homepage.

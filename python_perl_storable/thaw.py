@@ -21,6 +21,10 @@ class StorableReader:
 
     def read_magic(self):
         """ Считывает магическое число """
+
+        if self.storable[self.pos: self.pos + 4] == MAGICSTR_BYTES:
+            self.pos += 4
+
         use_network_order = self.readUInt8()
         version_major = use_network_order >> 1
         version_minor = self.readUInt8() if version_major > 1 else 0

@@ -12,12 +12,13 @@ def is_ref(obj):
 #     print("%s -> \\x%02x (%d) %s" % (s, int(number), number, const))
 
 class StorableWriter:
-    def __init__(self):
+    def __init__(self, iconv):
         self.hseen = {}
         self.tagnum = 0
         self.hclass = {}
         self.classnum = 0
         self.storable = [] # выходной буфер
+        self.iconv = iconv
     
     def writeUInt8(self, number):
         # debug("writeUInt8", number, 1)
@@ -90,6 +91,10 @@ class StorableWriter:
 
 
         if isinstance(sv, str):
+            if self.iconv:
+                self.save_scalar(self.iconv(sv))
+                return
+
             sv = sv.encode('utf-8')
             if is_ascii(sv):
                 self.save_scalar(sv)
@@ -164,7 +169,7 @@ class StorableWriter:
         self.magic_write()
         self.store(sv, from_ref=True)
 
-def freeze(sv):
-    w = StorableWriter()
+def freeze(sv, iconv=None, magic=False):
+    w = StorableWriter(iconv=iconv)
     w.ref_store(sv)
-    return b''.join(w.storable)
+    return b''.join(([MAGICSTR_BYTES] if magic else []) + w.storable)

@@ -1,6 +1,9 @@
+MAGICSTR_BYTES = b'pst0'
+
 STORABLE_BIN_MAJOR = 2  # Binary major "version"
 STORABLE_BIN_MINOR = 11  # Binary minor "version"
 BYTEORDER_BYTES = b'12345678'
+
 
 SIZE_OF_INT = 4
 SIZE_OF_LONG = 8

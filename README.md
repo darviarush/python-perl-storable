@@ -6,11 +6,11 @@ python_perl_storable - распаковывает структуру из фор
 
 # VERSION
 
-0.0.6
+0.0.7
 
 # DESCRIPTION
 
-```
+```python
 from python_perl_storable import freeze, thaw
 
 class A:
@@ -55,17 +55,31 @@ print(data['s'])        # -> Здравствуй, Мир!
 ### ARGUMENTS
 
 - data - данные питона: строка, число, словарь, список, объект и т.д.
-
-
-### ARGUMENTS
-
-- data - структура python
-- classes - словарь с классами. Необязательный параметр
-- iconv - функция для конвертации строк не в utf8. Необязательный параметр
+- magic - булево значение. Необязательно. Добавляет к выводу магическое число 'pst0'
 
 ### RETURNS
 
-Any
+Бинарная строка с данными в формате Perl Storable
+
+# SCRIPT
+
+```sh
+# Заморозить-раморозить:
+$ echo '[123, "Хай!"]' | pypls freeze | pypls thaw
+
+# Передавать замороженные данные в бинарном виде:
+$ echo '[123, "Хай!"]' | pypls freeze -b | pypls thaw -b
+
+# Передавать код в параметре:
+$ pypls freeze --data '[123, "Хай!"]' | pypls thaw
+
+# Добавить магическое число и обесцветить замероженную строку:
+$ pypls freeze -m -s --data '[123, "Хай!"]' | pypls thaw
+
+# Перекодировать строки (bytes останутся как есть):
+$ pypls freeze --data '[123, "Хай!"]' -i cp1251 | pypls thaw -i cp1251
+
+```
 
 # INSTALL
 
@@ -76,6 +90,7 @@ $ pip install python-perl-storable
 # REQUIREMENTS
 
 * data-printer
+* argparse
 
 # LICENSE
 
