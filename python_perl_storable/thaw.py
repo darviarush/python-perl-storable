@@ -74,11 +74,11 @@ class StorableReader:
     def retrieve_object(self):
         tag = self.readInt32BE()
         if tag < 0 or tag >= len(self.aseen):
-            raise PerlStorableException('Object #' + tag + ' out of range')
+            raise PerlStorableException('Object #%s out of range 0..%d' % (tag, len(self.aseen)-1))
         return self.aseen[tag]
 
     def retrieve_other(self):
-        raise PerlStorableException("Структура Storable повреждена. Обработчик № " + str(self.type))
+        raise PerlStorableException("Структура Storable повреждена. Обработчик № %s" % self.type)
 
     def retrieve_byte(self):
         return self.seen(self.readUInt8() - 128)

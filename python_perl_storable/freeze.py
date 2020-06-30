@@ -1,51 +1,42 @@
 import struct
 from python_perl_storable.exception import PerlStorableException
 from python_perl_storable.constants import *
+from data_printer import p, np
+
 
 def is_ref(obj):
     return isinstance(obj, (dict, list, tuple)) \
         or isinstance(obj, object) and hasattr(obj, '__dict__')
 
-# from data_printer import p, np 
-# def debug(s, number, int8=False):
-#     const = SX[number] if int8 and number in SX else ""
-#     print("%s -> \\x%02x (%d) %s" % (s, int(number), number, const))
 
 class StorableWriter:
     def __init__(self, iconv):
         self.hseen = {}
-        self.tagnum = 0
+        self.tagnum = -1
         self.hclass = {}
         self.classnum = 0
         self.storable = [] # выходной буфер
         self.iconv = iconv
     
     def writeUInt8(self, number):
-        # debug("writeUInt8", number, 1)
         self.storable.append( struct.pack("B", number) )
     
     def writeInt32LE(self, number):
-        # debug("writeInt32", number)
         self.storable.append( struct.pack("<i", number) )
     
     def writeInt32BE(self, number):
-        # debug("writeInt32", number)
         self.storable.append( struct.pack(">i", number) )
     
     def writeInt8(self, number):
-        # debug("writeInt8", number)
         self.storable.append( struct.pack("b", number) )
     
     def writeInt64LE(self, number):
-        # debug("writeInt64", number)
         self.storable.append( struct.pack("<q", number) )
     
     def writeDouble64LE(self, number):
-        # debug("writeDouble", number)
         self.storable.append( struct.pack("<d", number) )
 
     def write(self, string):
-        # print("write %s" % string)
         self.storable.append(string)
 
     def magic_write(self):
@@ -68,45 +59,43 @@ class StorableWriter:
             self.writeInt32LE(len(sv))
         self.write(sv)
 
+    def hv_store(self, sv):
+        self.hseen[id(sv)] = self.tagnum
+
+
     def store(self, sv, from_ref=False):
-
-        # print("store id=%s from_ref=%s" % (self.hseen[id(sv)] if id(sv) in self.hseen else 'no', from_ref) )
-        # p(sv)
-
-        if sv is None:
-            self.writeUInt8(SX_UNDEF)
-            self.tagnum += 1 
-            return
-
 
         if id(sv) in self.hseen:
             if is_ref(sv):
                 self.writeUInt8(SX_REF)
+                self.tagnum += 1
             self.writeUInt8(SX_OBJECT)
             self.writeInt32BE(self.hseen[id(sv)])
             return
 
         self.tagnum += 1
-        self.hseen[id(sv)] = self.tagnum
 
+        if sv is None:
+            self.writeUInt8(SX_UNDEF)
+        elif isinstance(sv, str):
+            self.hv_store(sv)
 
-        if isinstance(sv, str):
             if self.iconv:
                 self.save_scalar(self.iconv(sv))
-                return
-
-            sv = sv.encode('utf-8')
-            if is_ascii(sv):
-                self.save_scalar(sv)
             else:
-                if len(sv) < 256:
-                    self.writeUInt8(SX_UTF8STR)
-                    self.writeUInt8(len(sv))
+                sv = sv.encode('utf-8')
+                if is_ascii(sv):
+                    self.save_scalar(sv)
                 else:
-                    self.writeUInt8(SX_LUTF8STR)
-                    self.writeInt32LE(len(sv))
-                self.write(sv)
+                    if len(sv) < 256:
+                        self.writeUInt8(SX_UTF8STR)
+                        self.writeUInt8(len(sv))
+                    else:
+                        self.writeUInt8(SX_LUTF8STR)
+                        self.writeInt32LE(len(sv))
+                    self.write(sv)
         elif isinstance(sv, bytes):
+            self.hv_store(sv)
             self.save_scalar(sv)
         elif isinstance(sv, int):
             if -128 <= sv < 128:
@@ -116,9 +105,11 @@ class StorableWriter:
                 self.writeUInt8(SX_INTEGER)
                 self.writeInt64LE(sv)
         elif isinstance(sv, float):
+            self.hv_store(sv)
             self.writeUInt8(SX_DOUBLE)
             self.writeDouble64LE(sv)
         elif isinstance(sv, object) and hasattr(sv, '__dict__'):
+            self.hv_store(sv)
             name = sv.__class__.__name__.replace("__", "::")
             if name in self.hclass:
                 self.writeUInt8(SX_IX_BLESS)
@@ -138,6 +129,7 @@ class StorableWriter:
                     self.writeUInt8(0x80)
                     self.writeInt32LE(len(name))
                 self.write(bytes(name, 'utf-8'))
+            #self.tagnum -= 1
             if isinstance(sv, (list, tuple)):
                 self.store(list(sv), True)
             else:
@@ -146,6 +138,7 @@ class StorableWriter:
             if not from_ref:
                self.writeUInt8(SX_REF) 
                self.tagnum += 1
+            self.hv_store(sv)
             self.writeUInt8(SX_ARRAY)
             self.writeInt32LE(len(sv))
             for i in sv: 
@@ -154,6 +147,7 @@ class StorableWriter:
             if not from_ref:
                self.writeUInt8(SX_REF)
                self.tagnum += 1
+            self.hv_store(sv)
             self.writeUInt8(SX_HASH)
             self.writeInt32LE(len(sv))
             for i in sv:
@@ -164,12 +158,52 @@ class StorableWriter:
 
         else:
             raise PerlStorableException('Undefined type `%s`' % (type(sv),))
+
+        
         
     def ref_store(self, sv):
         self.magic_write()
         self.store(sv, from_ref=True)
 
-def freeze(sv, iconv=None, magic=False):
-    w = StorableWriter(iconv=iconv)
+
+class StorableWriterDebug(StorableWriter):
+
+    def writeUInt8(self, number):
+        self.debug("writeUInt8", number, 1)
+        super.writeUInt8(number)
+    
+    def writeInt32LE(self, number):
+        self.debug("writeInt32", number)
+        super.writeInt32LE(number)
+    
+    def writeInt32BE(self, number):
+        self.debug("writeInt32", number)
+        super.writeInt32BE(number)
+    
+    def writeInt8(self, number):
+        self.debug("writeInt8", number)
+        super.writeInt8(number)
+    
+    def writeInt64LE(self, number):
+        self.debug("writeInt64", number)
+        super.writeInt64LE(number)
+    
+    def writeDouble64LE(self, number):
+        self.debug("writeDouble", number)
+        super.writeDouble64LE(number)
+
+    def write(self, string):
+        print("write %s" % string)
+        super.write(string)
+
+    def store(self, sv, from_ref=False):
+        print("/-- store id=%s from_ref=%s" % (self.hseen[id(sv)] if id(sv) in self.hseen else 'no', from_ref) )
+        p(sv)
+        super.store(sv, from_ref)
+        print(" --/")
+
+def freeze(sv, iconv=None, magic=False, debug=False):
+    w = StorableWriterDebug(iconv=iconv) if debug else StorableWriter(iconv=iconv)
     w.ref_store(sv)
     return b''.join(([MAGICSTR_BYTES] if magic else []) + w.storable)
+

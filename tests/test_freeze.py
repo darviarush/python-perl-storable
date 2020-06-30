@@ -4,28 +4,8 @@ from data_printer import np, p
 
 sys.path.append(".")
 
-from python_perl_storable import thaw, freeze
-import subprocess
+from python_perl_storable import thaw, freeze, freeze_perl, thaw_perl
 
-def freeze_perl(value, init=''):
-    p = subprocess.Popen(["perl", "-e", "%suse Storable; print Storable::freeze(%s)" 
-        % (init, value)], stdout=subprocess.PIPE)
-        
-    output, err = p.communicate()
-
-    if p.returncode != 0:
-        raise IOError("returncode=%s" % p.returncode)
-    return output 
-
-def thaw_perl(value, init='', noout=0):
-
-    value = '"%s"' % (('%s' % value)[2:-1])
-
-    x = subprocess.call(["perl", "-e", "%suse Storable; use Data::Dumper; %s(Storable::thaw(%s))" 
-        % (init, ("" if noout else "print STDERR Dumper"), value)])
-
-    if x != 0:
-        raise IOError("returncode=%s" % x)
 
 
 class FreezeTestCase(unittest.TestCase):
