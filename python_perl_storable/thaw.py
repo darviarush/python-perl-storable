@@ -117,7 +117,10 @@ class StorableReader:
 
     def retrieve_ref(self):
         """ Аналога ссылки perl-а в Python нет, в Python всё ссылки, поэтому возвращаем значение так """
-        return self.seen(self.retrieve())
+        self.seen(None)
+        sv = self.retrieve()
+        self.aseen[-1] = sv
+        return sv
 
     def retrieve_hash(self):
         length = self.readInt32LE()

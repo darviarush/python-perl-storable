@@ -1,7 +1,7 @@
 import struct
 from python_perl_storable.exception import PerlStorableException
 from python_perl_storable.constants import *
-from data_printer import p, np
+from data_printer import p
 
 
 def is_ref(obj):
@@ -109,8 +109,11 @@ class StorableWriter:
             self.writeUInt8(SX_DOUBLE)
             self.writeDouble64LE(sv)
         elif isinstance(sv, object) and hasattr(sv, '__dict__'):
-            self.hv_store(sv)
+            
+            self.tagnum -= 1
+
             name = sv.__class__.__name__.replace("__", "::")
+            
             if name in self.hclass:
                 self.writeUInt8(SX_IX_BLESS)
                 classnum = self.hclass[name]
@@ -129,7 +132,6 @@ class StorableWriter:
                     self.writeUInt8(0x80)
                     self.writeInt32LE(len(name))
                 self.write(bytes(name, 'utf-8'))
-            #self.tagnum -= 1
             if isinstance(sv, (list, tuple)):
                 self.store(list(sv), True)
             else:
