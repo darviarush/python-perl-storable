@@ -190,9 +190,12 @@ class StorableReader:
         if isinstance(sv, list):
             for v in sv:
                 obj.append(v)
-        else:
+        elif isinstance(sv, dict):
             for key, val in sv.items():
                 setattr(obj, key, val)
+        else:
+            setattr(obj, "scalar", sv)
+
         return obj
 
     def retrieve_blessed(self):
