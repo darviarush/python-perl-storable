@@ -182,19 +182,21 @@ class StorableReader:
         # делаем класс F одинаковым с классом self.bless[classname]
         # объекты класса F будут "instanceof A"
         a_class = self.bless[classname] if classname in self.bless else type(classname_python, (
-        (list if isinstance(sv, list) else object),), {})
-
-        obj = a_class.__new__(a_class)
+        type(sv),), {})
 
         # переписываем свойства
         if isinstance(sv, list):
+            obj = a_class.__new__(a_class)
             for v in sv:
                 obj.append(v)
         elif isinstance(sv, dict):
+            obj = a_class.__new__(a_class)
             for key, val in sv.items():
                 setattr(obj, key, val)
         else:
-            setattr(obj, "scalar", sv)
+            obj = a_class(sv)
+            #setattr(obj, "scalar", sv)
+
 
         return obj
 
